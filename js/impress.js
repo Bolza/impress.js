@@ -276,9 +276,9 @@
         // `onStepEnter` is called whenever the step element is entered
         // but the event is triggered only if the step is different than
         // last entered step.
-        var onStepEnter = function (step) {
+        var onStepEnter = function (step, prevStep) {
             if (lastEntered !== step) {
-                triggerEvent(step, "impress:stepenter");
+                triggerEvent(step, "impress:stepenter", {prevStep: prevStep});
                 lastEntered = step;
             }
         };
@@ -286,9 +286,9 @@
         // `onStepLeave` is called whenever the step element is left
         // but the event is triggered only if the step is the same as
         // last entered step.
-        var onStepLeave = function (step) {
+        var onStepLeave = function (step, nextStep) {
             if (lastEntered === step) {
-                triggerEvent(step, "impress:stepleave");
+                triggerEvent(step, "impress:stepleave", {nextStep: nextStep});
                 lastEntered = null;
             }
         };
@@ -483,7 +483,7 @@
             
             // trigger leave of currently active element (if it's not the same step again)
             if (activeStep && activeStep !== el) {
-                onStepLeave(activeStep);
+                onStepLeave(activeStep, el);
             }
             
             // Now we alter transforms of `root` and `canvas` to trigger transitions.
@@ -526,6 +526,7 @@
             
             // store current state
             currentState = target;
+            var prevStep = activeStep
             activeStep = el;
             
             // And here is where we trigger `impress:stepenter` event.
@@ -542,7 +543,7 @@
             // version 0.5.2 of impress.js: http://github.com/bartaz/impress.js/blob/0.5.2/js/impress.js
             window.clearTimeout(stepEnterTimeout);
             stepEnterTimeout = window.setTimeout(function() {
-                onStepEnter(activeStep);
+                onStepEnter(activeStep, prevStep);
             }, duration + delay);
             
             return el;
@@ -635,7 +636,9 @@
             init: init,
             goto: goto,
             next: next,
-            prev: prev
+            prev: prev,
+            root: root,
+            triggerEvent: triggerEvent
         });
 
     };
